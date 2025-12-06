@@ -66,8 +66,8 @@ export function Home() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">⌨️ Typing Training</h1>
-          <p className="text-gray-400">Improve your typing speed and accuracy</p>
+          <h1 className="text-3xl font-bold text-white">🥋 Typing Dojo</h1>
+          <p className="text-gray-400">Master your typing skills</p>
         </div>
         <div>
           {user ? (
