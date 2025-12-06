@@ -6,7 +6,21 @@ import { TypingSession } from '@/components/TypingSession';
 import { SessionResult } from '@/components/SessionResult';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
 import type { TrainingContent, ContentCategory, ContentLanguage, ContentLength } from '@/types/content';
 
 type View = 'menu' | 'session' | 'result';
@@ -32,10 +47,33 @@ export function Home() {
   const [result, setResult] = useState<SessionResultData | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory>('general');
 
-  const startSession = (category: ContentCategory, language?: ContentLanguage, length?: ContentLength) => {
-    const content = getRandomContent({ category, language, length });
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogCategory, setDialogCategory] = useState<ContentCategory>('general');
+  const [selectedLanguage, setSelectedLanguage] = useState<ContentLanguage>('en');
+  const [selectedLength, setSelectedLength] = useState<ContentLength>('medium');
+
+  const openCategoryDialog = (category: ContentCategory) => {
+    setDialogCategory(category);
+    // Set defaults based on category
+    if (category === 'code') {
+      setSelectedLanguage('js');
+    } else {
+      setSelectedLanguage('en');
+    }
+    setSelectedLength('medium');
+    setDialogOpen(true);
+  };
+
+  const startSessionFromDialog = () => {
+    const content = getRandomContent({
+      category: dialogCategory,
+      language: selectedLanguage,
+      length: selectedLength
+    });
     setCurrentContent(content);
-    setSelectedCategory(category);
+    setSelectedCategory(dialogCategory);
+    setDialogOpen(false);
     setView('session');
   };
 
@@ -160,7 +198,7 @@ export function Home() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {/* General Text */}
-          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => startSession('general', 'en', 'medium')}>
+          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => openCategoryDialog('general')}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">General Text</CardTitle>
@@ -176,7 +214,7 @@ export function Home() {
           </Card>
 
           {/* Code */}
-          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => startSession('code', 'js')}>
+          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => openCategoryDialog('code')}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Code</CardTitle>
@@ -192,7 +230,7 @@ export function Home() {
           </Card>
 
           {/* Numbers */}
-          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => startSession('numbers', 'en', 'medium')}>
+          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => openCategoryDialog('numbers')}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Numbers</CardTitle>
@@ -207,50 +245,71 @@ export function Home() {
             </CardContent>
           </Card>
         </div>
-
-        {/* More Options */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">More Options</CardTitle>
-            <CardDescription>Choose a specific language or difficulty</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="code" className="w-full">
-              <TabsList className="mb-4">
-                <TabsTrigger value="code">Languages</TabsTrigger>
-                <TabsTrigger value="length">Difficulty</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="code" className="flex flex-wrap gap-2 mt-0">
-                <Button onClick={() => startSession('code', 'js')} variant="outline" size="sm">
-                  JavaScript
-                </Button>
-                <Button onClick={() => startSession('code', 'ts')} variant="outline" size="sm">
-                  TypeScript
-                </Button>
-                <Button onClick={() => startSession('code', 'py')} variant="outline" size="sm">
-                  Python
-                </Button>
-                <Button onClick={() => startSession('code', 'rs')} variant="outline" size="sm">
-                  Rust
-                </Button>
-              </TabsContent>
-
-              <TabsContent value="length" className="flex flex-wrap gap-2 mt-0">
-                <Button onClick={() => startSession('general', 'en', 'short')} variant="outline" size="sm">
-                  Short (~30s)
-                </Button>
-                <Button onClick={() => startSession('general', 'en', 'medium')} variant="outline" size="sm">
-                  Medium (~1min)
-                </Button>
-                <Button onClick={() => startSession('general', 'en', 'long')} variant="outline" size="sm">
-                  Long (~2min)
-                </Button>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Category Options Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {dialogCategory === 'general' && '📝 General Text'}
+              {dialogCategory === 'code' && '💻 Code'}
+              {dialogCategory === 'numbers' && '🔢 Numbers'}
+            </DialogTitle>
+            <DialogDescription>
+              {dialogCategory === 'general' && 'Practice typing with prose and quotes'}
+              {dialogCategory === 'code' && 'Type real programming snippets'}
+              {dialogCategory === 'numbers' && 'Master the number row'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Language selector for Code */}
+            {dialogCategory === 'code' && (
+              <div className="space-y-2">
+                <Label>Language</Label>
+                <Select value={selectedLanguage} onValueChange={(v) => setSelectedLanguage(v as ContentLanguage)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="js">JavaScript</SelectItem>
+                    <SelectItem value="ts">TypeScript</SelectItem>
+                    <SelectItem value="py">Python</SelectItem>
+                    <SelectItem value="rs">Rust</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Length selector for General and Numbers */}
+            {(dialogCategory === 'general' || dialogCategory === 'numbers') && (
+              <div className="space-y-2">
+                <Label>Length</Label>
+                <Select value={selectedLength} onValueChange={(v) => setSelectedLength(v as ContentLength)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="short">Short (~30 seconds)</SelectItem>
+                    <SelectItem value="medium">Medium (~1 minute)</SelectItem>
+                    <SelectItem value="long">Long (~2 minutes)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={startSessionFromDialog}>
+              Start Typing →
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
