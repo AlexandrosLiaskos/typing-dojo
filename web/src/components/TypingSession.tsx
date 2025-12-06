@@ -42,16 +42,16 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
   }, [startTime, userInput.length]);
 
   const calculatePoints = useCallback((wpm: number, accuracy: number) => {
-    // Base points for completing a session
-    const basePoints = 10;
-    // Speed bonus: 0.5 points per WPM (60 WPM = 30 points)
-    const speedScore = wpm * 0.5;
-    // Accuracy bonus: up to 50 points for perfect accuracy
-    const accuracyScore = (accuracy / 100) * 50;
-    // Bonus multiplier for high performance
-    const performanceMultiplier = accuracy >= 95 && wpm >= 60 ? 1.5 : 1;
+    // Base: 5 points for completing
+    // Speed: 0.2 per WPM (60 WPM = 12 pts)
+    // Accuracy: up to 15 pts for 100%
+    // High performance bonus: 1.2x if 95%+ acc AND 60+ WPM
+    const base = 5;
+    const speed = wpm * 0.2;
+    const acc = (accuracy / 100) * 15;
+    const multiplier = (accuracy >= 95 && wpm >= 60) ? 1.2 : 1;
 
-    return Math.round((basePoints + speedScore + accuracyScore) * performanceMultiplier);
+    return Math.round((base + speed + acc) * multiplier);
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
