@@ -37,11 +37,16 @@ interface StatsState {
   updateStats: (wpm: number, accuracy: number) => Promise<void>;
 }
 
-function calculatePoints(wpm: number, accuracy: number, sessions: number): number {
-  const speedScore = wpm * 6;
-  const accuracyScore = accuracy * 20;
-  const sessionBonus = Math.log2(sessions + 1) * 150;
-  return Math.round(speedScore + accuracyScore + sessionBonus);
+function calculatePoints(wpm: number, accuracy: number, _sessions: number): number {
+  // Same formula as TypingSession:
+  // Base: 1 point
+  // Speed: 0.05 per WPM (60 WPM = 3 pts)
+  // Accuracy: up to 5 pts for 100%
+  // Total: ~9 points for a good session
+  const base = 1;
+  const speed = wpm * 0.05;
+  const acc = (accuracy / 100) * 5;
+  return Math.round(base + speed + acc);
 }
 
 export const useStatsStore = create<StatsState>((set, get) => ({
