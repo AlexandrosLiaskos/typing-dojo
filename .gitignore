@@ -1,0 +1,4 @@
+.typing-training/
+node_modules/
+out/
+*.vsix

@@ -1,0 +1,203 @@
+{
+  "name": "typing-training",
+  "publisher": "antigravity",
+  "displayName": "Typing Training",
+  "description": "A typing training extension for VS Code",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "typing-training-container",
+          "title": "Typing Training",
+          "icon": "$(keyboard)"
+        }
+      ]
+    },
+    "views": {
+      "typing-training-container": [
+        {
+          "id": "typing-training-start-view",
+          "name": "Start Training",
+          "icon": "$(play)"
+        },
+        {
+          "id": "typing-training-dashboard-view",
+          "name": "Dashboard",
+          "icon": "$(graph)"
+        },
+        {
+          "id": "typing-training-leaderboard-view",
+          "name": "Leaderboard",
+          "icon": "$(list-ordered)"
+        },
+        {
+          "id": "typing-training-library-view",
+          "name": "Library",
+          "icon": "$(library)"
+        },
+        {
+          "id": "typing-training-profile-view",
+          "name": "Profile",
+          "icon": "$(account)"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "typing-training.startSession",
+        "title": "Typing Training: Start Session"
+      },
+      {
+        "command": "typing-training.completeSession",
+        "title": "Typing Training: Complete Session"
+      },
+      {
+        "command": "typing-training.showGuide",
+        "title": "Typing Training: Show Guide"
+      },
+
+      {
+        "command": "typing-training.refreshDashboard",
+        "title": "Typing Training: Refresh Dashboard"
+      },
+      {
+        "command": "typing-training.syncLeaderboard",
+        "title": "Typing Training: Sync Leaderboard"
+      },
+      {
+        "command": "typing-training.refreshLeaderboard",
+        "title": "Typing Training: Refresh Leaderboard"
+      },
+      {
+        "command": "typing-training.openDashboard",
+        "title": "Typing Training: Open Dashboard"
+      },
+      {
+        "command": "typing-training.profile.editField",
+        "title": "Typing Training: Edit Profile Field"
+      },
+      {
+        "command": "typing-training.profile.connectGitHub",
+        "title": "Typing Training: Connect GitHub"
+      },
+      {
+        "command": "typing-training.refreshLibrary",
+        "title": "Typing Training: Refresh Library"
+      },
+      {
+        "command": "typing-training.openProfile",
+        "title": "Open Profile",
+        "icon": "$(account)"
+      },
+      {
+        "command": "typing-training.changeViewMode",
+        "title": "Change View Mode",
+        "icon": "$(layout)"
+      },
+      {
+        "command": "typing-training.refreshProfile",
+        "title": "Typing Training: Refresh Profile"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "typing-training.refreshDashboard",
+          "when": "view == typing-training-dashboard-view",
+          "group": "navigation"
+        },
+        {
+          "command": "typing-training.refreshLeaderboard",
+          "when": "view == typing-training-leaderboard-view",
+          "group": "navigation"
+        },
+        {
+          "command": "typing-training.changeViewMode",
+          "when": "view == typing-training-start-view",
+          "group": "navigation"
+        },
+        {
+          "command": "typing-training.refreshLibrary",
+          "when": "view == typing-training-library-view",
+          "group": "navigation"
+        },
+        {
+          "command": "typing-training.refreshProfile",
+          "when": "view == typing-training-profile-view",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "typing-training.profile.editField",
+          "when": "view == typing-training-profile-view && viewItem =~ /profile:(name|email)/",
+          "group": "inline"
+        },
+        {
+          "command": "typing-training.profile.connectGitHub",
+          "when": "view == typing-training-profile-view && viewItem == profile:github",
+          "group": "inline"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "typing",
+        "extensions": [
+          ".typing"
+        ],
+        "aliases": [
+          "Typing Training"
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "Typing Training",
+      "properties": {
+        "typingTraining.username": {
+          "type": "string",
+          "default": "Guest",
+          "description": "User name for the typing profile"
+        },
+        "typingTraining.viewMode": {
+          "type": "string",
+          "enum": [
+            "split",
+            "single"
+          ],
+          "default": "split",
+          "description": "Choose between Split View (reference + input) or Single View (overwrite mode)."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[typing]": {
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": false,
+        "editor.suggest.snippetsPreventQuickSuggestions": false,
+        "editor.acceptSuggestionOnEnter": "off"
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "16.x",
+    "typescript": "^5.1.3"
+  }
+}
