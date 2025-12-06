@@ -1,3 +1,7 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+
 interface SessionResultProps {
   wpm: number;
   accuracy: number;
@@ -8,51 +12,51 @@ interface SessionResultProps {
 
 export function SessionResult({ wpm, accuracy, points, onPlayAgain, onGoHome }: SessionResultProps) {
   const getWpmRating = () => {
-    if (wpm >= 80) return { label: 'Excellent!', color: 'text-green-400' };
-    if (wpm >= 60) return { label: 'Great!', color: 'text-blue-400' };
-    if (wpm >= 40) return { label: 'Good', color: 'text-yellow-400' };
-    return { label: 'Keep practicing!', color: 'text-gray-400' };
+    if (wpm >= 80) return { label: 'Excellent!', color: 'text-green-500' };
+    if (wpm >= 60) return { label: 'Great!', color: 'text-blue-500' };
+    if (wpm >= 40) return { label: 'Good', color: 'text-yellow-500' };
+    return { label: 'Keep practicing!', color: 'text-muted-foreground' };
   };
 
   const rating = getWpmRating();
 
   return (
-    <div className="max-w-md mx-auto p-8 text-center">
-      <div className="mb-8">
-        <h2 className={`text-3xl font-bold mb-2 ${rating.color}`}>
+    <div className="max-w-md mx-auto text-center space-y-8">
+      <div>
+        <h2 className={cn("text-3xl font-bold mb-1", rating.color)}>
           {rating.label}
         </h2>
-        <p className="text-gray-400">Session Complete</p>
+        <p className="text-muted-foreground">Session Complete</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-3xl font-bold text-white">{wpm}</div>
-          <div className="text-sm text-gray-400">WPM</div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-3xl font-bold text-white">{accuracy.toFixed(1)}%</div>
-          <div className="text-sm text-gray-400">Accuracy</div>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-3xl font-bold text-yellow-400">+{points}</div>
-          <div className="text-sm text-gray-400">Points</div>
-        </div>
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold">{wpm}</div>
+            <p className="text-xs text-muted-foreground">WPM</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold">{accuracy.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground">Accuracy</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold text-primary">+{points}</div>
+            <p className="text-xs text-muted-foreground">Points</p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="flex gap-4 justify-center">
-        <button
-          onClick={onPlayAgain}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
-        >
+        <Button onClick={onPlayAgain}>
           Play Again
-        </button>
-        <button
-          onClick={onGoHome}
-          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition"
-        >
+        </Button>
+        <Button variant="outline" onClick={onGoHome}>
           Home
-        </button>
+        </Button>
       </div>
     </div>
   );

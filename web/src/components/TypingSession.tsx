@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { TrainingContent } from '../types/content';
-import { useStatsStore } from '../stores/statsStore';
-import { useAuthStore } from '../stores/authStore';
-import { supabase } from '../lib/supabase';
+import type { TrainingContent } from '@/types/content';
+import { useStatsStore } from '@/stores/statsStore';
+import { useAuthStore } from '@/stores/authStore';
+import { supabase } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface TypingSessionProps {
   content: TrainingContent;
@@ -20,7 +24,6 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
 
   const targetText = content.text;
 
-  // Calculate accuracy
   const calculateAccuracy = useCallback(() => {
     if (userInput.length === 0) return 100;
     let correct = 0;
@@ -30,7 +33,6 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
     return (correct / userInput.length) * 100;
   }, [userInput, targetText]);
 
-  // Calculate WPM
   const calculateWPM = useCallback(() => {
     if (!startTime) return 0;
     const elapsedMinutes = (Date.now() - startTime) / 60000;
@@ -39,30 +41,26 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
     return Math.round(wordsTyped / elapsedMinutes);
   }, [startTime, userInput.length]);
 
-  // Calculate points
   const calculatePoints = useCallback((wpm: number, accuracy: number) => {
     const speedScore = wpm * 4;
     const accuracyScore = accuracy * 10;
     return Math.round(speedScore + accuracyScore);
   }, []);
 
-  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    
+
     if (!startTime && value.length > 0) {
       setStartTime(Date.now());
     }
 
     setUserInput(value);
 
-    // Check if complete
     if (value.length >= targetText.length) {
       finishSession();
     }
   };
 
-  // Finish session
   const finishSession = async () => {
     if (isComplete) return;
     setIsComplete(true);
@@ -72,7 +70,6 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
     const points = calculatePoints(wpm, accuracy);
     const durationSeconds = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
 
-    // Save to database if logged in
     if (user) {
       await updateStats(wpm, accuracy);
 
@@ -91,22 +88,20 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
     onComplete(wpm, accuracy, points);
   };
 
-  // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Render character with color coding
   const renderText = () => {
     return targetText.split('').map((char, index) => {
-      let className = 'text-gray-400';
-      
+      let className = 'text-muted-foreground';
+
       if (index < userInput.length) {
-        className = userInput[index] === char 
-          ? 'text-green-400' 
-          : 'text-red-400 bg-red-900/30';
+        className = userInput[index] === char
+          ? 'text-green-500'
+          : 'text-red-500 bg-red-500/10';
       } else if (index === userInput.length) {
-        className = 'text-white bg-blue-500/50 animate-pulse';
+        className = 'text-foreground bg-primary/20 animate-pulse';
       }
 
       return (
@@ -119,53 +114,70 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
 
   const wpm = calculateWPM();
   const accuracy = calculateAccuracy();
+  const progress = Math.round((userInput.length / targetText.length) * 100);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-4 flex justify-between items-center">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-xl font-bold text-white">{content.title}</h2>
-          <p className="text-sm text-gray-400">
-            {content.category} • {content.language} • {content.difficulty}
-          </p>
+          <h2 className="text-xl font-semibold">{content.title}</h2>
+          <div className="flex gap-2 mt-1">
+            <Badge variant="secondary">{content.category}</Badge>
+            <Badge variant="outline">{content.language}</Badge>
+          </div>
         </div>
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 text-gray-400 hover:text-white transition"
-        >
+        <Button variant="ghost" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
 
       {/* Stats bar */}
-      <div className="flex gap-6 mb-6 text-sm">
-        <div className="bg-gray-800 px-4 py-2 rounded-lg">
-          <span className="text-gray-400">WPM: </span>
-          <span className="text-white font-mono text-lg">{wpm}</span>
-        </div>
-        <div className="bg-gray-800 px-4 py-2 rounded-lg">
-          <span className="text-gray-400">Accuracy: </span>
-          <span className="text-white font-mono text-lg">{accuracy.toFixed(1)}%</span>
-        </div>
-        <div className="bg-gray-800 px-4 py-2 rounded-lg">
-          <span className="text-gray-400">Progress: </span>
-          <span className="text-white font-mono text-lg">
-            {Math.round((userInput.length / targetText.length) * 100)}%
-          </span>
-        </div>
+      <div className="flex gap-4">
+        <Card className="flex-1">
+          <CardContent className="py-3 px-4 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">WPM</span>
+            <span className="text-xl font-mono font-bold">{wpm}</span>
+          </CardContent>
+        </Card>
+        <Card className="flex-1">
+          <CardContent className="py-3 px-4 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Accuracy</span>
+            <span className="text-xl font-mono font-bold">{accuracy.toFixed(1)}%</span>
+          </CardContent>
+        </Card>
+        <Card className="flex-1">
+          <CardContent className="py-3 px-4 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Progress</span>
+            <span className="text-xl font-mono font-bold">{progress}%</span>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-1 bg-muted rounded-full overflow-hidden">
+        <div
+          className="h-full bg-primary transition-all duration-150"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       {/* Target text display */}
-      <div className="bg-gray-800 rounded-lg p-6 mb-4 font-mono text-lg leading-relaxed whitespace-pre-wrap">
-        {renderText()}
-      </div>
+      <Card>
+        <CardContent className="p-6 font-mono text-lg leading-relaxed whitespace-pre-wrap">
+          {renderText()}
+        </CardContent>
+      </Card>
 
       {/* Hidden input for typing */}
       <textarea
         ref={inputRef}
         value={userInput}
         onChange={handleInputChange}
-        className="w-full h-32 bg-gray-900 border border-gray-700 rounded-lg p-4 text-white font-mono resize-none focus:outline-none focus:border-blue-500"
+        className={cn(
+          "w-full h-32 bg-muted border rounded-lg p-4 font-mono resize-none",
+          "focus:outline-none focus:ring-2 focus:ring-ring"
+        )}
         placeholder="Start typing here..."
         disabled={isComplete}
         autoFocus
