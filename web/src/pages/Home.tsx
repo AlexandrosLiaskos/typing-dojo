@@ -131,73 +131,102 @@ export function Home() {
       )}
 
       {/* Training Options */}
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="code">Code</TabsTrigger>
-          <TabsTrigger value="numbers">Numbers</TabsTrigger>
-        </TabsList>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Start Training</h2>
 
-        <TabsContent value="general" className="mt-6">
-          <Card>
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* General Text */}
+          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => startSession('general', 'en', 'medium')}>
             <CardHeader>
-              <CardTitle>General Text</CardTitle>
-              <CardDescription>Practice with prose and productivity tips</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">General Text</CardTitle>
+                <span className="text-2xl">📝</span>
+              </div>
+              <CardDescription>Practice with prose and quotes</CardDescription>
             </CardHeader>
-            <CardContent className="flex gap-3">
-              <Button onClick={() => startSession('general', 'en', 'short')} variant="secondary">
-                Short
-              </Button>
-              <Button onClick={() => startSession('general', 'en', 'medium')} variant="secondary">
-                Medium
-              </Button>
-              <Button onClick={() => startSession('general', 'en', 'long')} variant="secondary">
-                Long
+            <CardContent>
+              <Button className="w-full group-hover:bg-primary/90">
+                Start Typing →
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        <TabsContent value="code" className="mt-6">
-          <Card>
+          {/* Code */}
+          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => startSession('code', 'js')}>
             <CardHeader>
-              <CardTitle>Code</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Code</CardTitle>
+                <span className="text-2xl">💻</span>
+              </div>
               <CardDescription>Type real programming snippets</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-wrap gap-3">
-              <Button onClick={() => startSession('code', 'js')} variant="secondary">
-                JavaScript
-              </Button>
-              <Button onClick={() => startSession('code', 'ts')} variant="secondary">
-                TypeScript
-              </Button>
-              <Button onClick={() => startSession('code', 'py')} variant="secondary">
-                Python
-              </Button>
-              <Button onClick={() => startSession('code', 'rs')} variant="secondary">
-                Rust
+            <CardContent>
+              <Button className="w-full group-hover:bg-primary/90">
+                Start Typing →
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        <TabsContent value="numbers" className="mt-6">
-          <Card>
+          {/* Numbers */}
+          <Card className="group hover:border-foreground/20 transition-colors cursor-pointer" onClick={() => startSession('numbers', 'en', 'medium')}>
             <CardHeader>
-              <CardTitle>Numbers</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Numbers</CardTitle>
+                <span className="text-2xl">🔢</span>
+              </div>
               <CardDescription>Master the number row</CardDescription>
             </CardHeader>
-            <CardContent className="flex gap-3">
-              <Button onClick={() => startSession('numbers', 'en', 'short')} variant="secondary">
-                Short
-              </Button>
-              <Button onClick={() => startSession('numbers', 'en', 'medium')} variant="secondary">
-                Medium
+            <CardContent>
+              <Button className="w-full group-hover:bg-primary/90">
+                Start Typing →
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+
+        {/* More Options */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">More Options</CardTitle>
+            <CardDescription>Choose a specific language or difficulty</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="code" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="code">Languages</TabsTrigger>
+                <TabsTrigger value="length">Difficulty</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="code" className="flex flex-wrap gap-2 mt-0">
+                <Button onClick={() => startSession('code', 'js')} variant="outline" size="sm">
+                  JavaScript
+                </Button>
+                <Button onClick={() => startSession('code', 'ts')} variant="outline" size="sm">
+                  TypeScript
+                </Button>
+                <Button onClick={() => startSession('code', 'py')} variant="outline" size="sm">
+                  Python
+                </Button>
+                <Button onClick={() => startSession('code', 'rs')} variant="outline" size="sm">
+                  Rust
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="length" className="flex flex-wrap gap-2 mt-0">
+                <Button onClick={() => startSession('general', 'en', 'short')} variant="outline" size="sm">
+                  Short (~30s)
+                </Button>
+                <Button onClick={() => startSession('general', 'en', 'medium')} variant="outline" size="sm">
+                  Medium (~1min)
+                </Button>
+                <Button onClick={() => startSession('general', 'en', 'long')} variant="outline" size="sm">
+                  Long (~2min)
+                </Button>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
