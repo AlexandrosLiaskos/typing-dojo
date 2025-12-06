@@ -139,6 +139,7 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     );
 
     const newStats = {
+      user_id: user.id,
       sessions_completed: sessionsCompleted,
       average_wpm: averageWpm,
       last_wpm: wpm,
@@ -149,10 +150,10 @@ export const useStatsStore = create<StatsState>((set, get) => ({
       updated_at: new Date().toISOString(),
     };
 
+    // Use upsert to handle case where user_stats row doesn't exist yet
     const { error } = await supabase
       .from('user_stats')
-      .update(newStats as never)
-      .eq('user_id', user.id);
+      .upsert(newStats as never, { onConflict: 'user_id' });
 
     if (error) {
       console.error('Error updating stats:', error);
