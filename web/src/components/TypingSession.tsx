@@ -14,6 +14,22 @@ interface TypingSessionProps {
   onCancel: () => void;
 }
 
+// Get the indentation of the next line from target text
+function getNextLineIndent(targetText: string, currentPos: number): string {
+  // Find the start of the next line in target
+  const nextNewline = targetText.indexOf('\n', currentPos);
+  if (nextNewline === -1) return '';
+
+  // Get the content after the newline
+  const afterNewline = targetText.substring(nextNewline + 1);
+
+  // Extract leading whitespace
+  const match = afterNewline.match(/^[ \t]*/);
+  return match ? match[0] : '';
+}
+
+
+
 export function TypingSession({ content, onComplete, onCancel }: TypingSessionProps) {
   const [userInput, setUserInput] = useState('');
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -23,6 +39,7 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
   const { user } = useAuthStore();
 
   const targetText = content.text;
+  const isCode = content.category === 'code';
 
   const calculateAccuracy = useCallback(() => {
     if (userInput.length === 0) return 100;
@@ -42,19 +59,53 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
   }, [startTime, userInput.length]);
 
   const calculatePoints = useCallback((wpm: number, accuracy: number) => {
-    // Base: 1 point for completing
-    // Speed: 0.05 per WPM (60 WPM = 3 pts)
-    // Accuracy: up to 5 pts for 100%
-    // Total: ~9 points for a good session
     const base = 1;
     const speed = wpm * 0.05;
     const acc = (accuracy / 100) * 5;
-
     return Math.round(base + speed + acc);
   }, []);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!isCode) return;
+
+    const textarea = e.currentTarget;
+    const cursorPos = textarea.selectionStart;
+    const expectedChar = targetText[cursorPos];
+
+    // Handle Enter key - auto-indent
+    if (e.key === 'Enter' && expectedChar === '\n') {
+      e.preventDefault();
+      const indent = getNextLineIndent(targetText, cursorPos);
+      const newValue = userInput + '\n' + indent;
+
+      if (!startTime) setStartTime(Date.now());
+      setUserInput(newValue);
+
+      if (newValue.length >= targetText.length) {
+        finishSession();
+      }
+      return;
+    }
+
+    // Handle Tab key - insert proper indentation
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      // Check what's expected at this position
+      const expectedIndent = targetText.substring(cursorPos).match(/^[ \t]*/)?.[0] || '  ';
+      const newValue = userInput + expectedIndent;
+
+      if (!startTime) setStartTime(Date.now());
+      setUserInput(newValue);
+
+      if (newValue.length >= targetText.length) {
+        finishSession();
+      }
+      return;
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
+    let value = e.target.value;
 
     if (!startTime && value.length > 0) {
       setStartTime(Date.now());
@@ -175,18 +226,23 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
         </CardContent>
       </Card>
 
-      {/* Hidden input for typing */}
+      {/* Input for typing */}
       <textarea
         ref={inputRef}
         value={userInput}
         onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         className={cn(
           "w-full h-32 bg-muted border rounded-lg p-4 font-mono resize-none",
           "focus:outline-none focus:ring-2 focus:ring-ring"
         )}
-        placeholder="Start typing here..."
+        placeholder={isCode ? "Start typing... (Enter auto-indents, Tab inserts spaces)" : "Start typing here..."}
         disabled={isComplete}
         autoFocus
+        spellCheck={false}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
       />
     </div>
   );
