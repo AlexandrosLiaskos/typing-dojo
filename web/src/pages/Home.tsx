@@ -7,6 +7,13 @@ import { SessionResult } from '@/components/SessionResult';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { TrainingContent, ContentCategory, ContentLanguage, ContentLength } from '@/types/content';
 
 type View = 'menu' | 'session' | 'result';
@@ -74,7 +81,7 @@ export function Home() {
         </div>
         <div>
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {user.user_metadata?.avatar_url && (
                 <img src={user.user_metadata.avatar_url} alt="" className="w-9 h-9 rounded-full" />
               )}
@@ -82,9 +89,26 @@ export function Home() {
                 <div className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</div>
                 <div className="text-xs text-muted-foreground">{stats.totalPoints} pts</div>
               </div>
-              <Button variant="ghost" size="sm" onClick={signOut}>
-                Sign Out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="1"/>
+                      <circle cx="12" cy="5" r="1"/>
+                      <circle cx="12" cy="19" r="1"/>
+                    </svg>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem className="text-muted-foreground text-xs" disabled>
+                    {user.email}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
             <Button onClick={signInWithGoogle} variant="outline">
