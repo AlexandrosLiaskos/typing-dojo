@@ -41,28 +41,32 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
   const targetText = content.text;
   const isCode = content.category === 'code';
 
-  const calculateAccuracy = useCallback(() => {
-    if (userInput.length === 0) return 100;
+  const getCorrectChars = useCallback(() => {
     let correct = 0;
     for (let i = 0; i < userInput.length; i++) {
       if (userInput[i] === targetText[i]) correct++;
     }
-    return (correct / userInput.length) * 100;
+    return correct;
   }, [userInput, targetText]);
+
+  const calculateAccuracy = useCallback(() => {
+    if (userInput.length === 0) return 100;
+    return (getCorrectChars() / userInput.length) * 100;
+  }, [userInput.length, getCorrectChars]);
 
   const calculateWPM = useCallback(() => {
     if (!startTime) return 0;
     const elapsedMinutes = (Date.now() - startTime) / 60000;
     if (elapsedMinutes < 0.01) return 0;
-    const wordsTyped = userInput.length / 5;
-    return Math.round(wordsTyped / elapsedMinutes);
-  }, [startTime, userInput.length]);
+    // Only count CORRECT characters towards WPM
+    const correctWordsTyped = getCorrectChars() / 5;
+    return Math.round(correctWordsTyped / elapsedMinutes);
+  }, [startTime, getCorrectChars]);
 
-  const calculatePoints = useCallback((wpm: number, accuracy: number) => {
-    // WPM is the main factor, accuracy is a multiplier
-    // 60 WPM @ 95% = 57 pts, 100 WPM @ 100% = 100 pts
-    const accuracyMultiplier = accuracy / 100;
-    return Math.round(wpm * accuracyMultiplier);
+  const calculatePoints = useCallback((wpm: number, _accuracy: number) => {
+    // WPM already reflects only correct characters
+    // So points = WPM directly (no accuracy multiplier needed)
+    return Math.round(wpm);
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -37,19 +37,17 @@ interface StatsState {
   updateStats: (wpm: number, accuracy: number) => Promise<void>;
 }
 
-function calculateSessionPoints(wpm: number, accuracy: number): number {
-  // WPM is the main factor - more speed = more points
-  // Accuracy acts as a multiplier (0.5x to 1.0x)
+function calculateSessionPoints(wpm: number, _accuracy: number): number {
+  // WPM already reflects only CORRECT characters typed
+  // So points = WPM directly
   //
   // Examples:
-  // 30 WPM, 90% accuracy = 30 * 0.90 = 27 pts
-  // 60 WPM, 95% accuracy = 60 * 0.95 = 57 pts
-  // 80 WPM, 98% accuracy = 80 * 0.98 = 78 pts
-  // 100 WPM, 100% accuracy = 100 * 1.0 = 100 pts
-  // 50 WPM, 70% accuracy = 50 * 0.70 = 35 pts
-
-  const accuracyMultiplier = accuracy / 100;
-  return Math.round(wpm * accuracyMultiplier);
+  // 60 correct WPM = 60 pts
+  // 80 correct WPM = 80 pts
+  // 100 correct WPM = 100 pts
+  //
+  // Typing garbage fast gives 0 WPM because wrong chars don't count
+  return Math.round(wpm);
 }
 
 export const useStatsStore = create<StatsState>((set, get) => ({
