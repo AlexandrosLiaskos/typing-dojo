@@ -59,10 +59,10 @@ export function TypingSession({ content, onComplete, onCancel }: TypingSessionPr
   }, [startTime, userInput.length]);
 
   const calculatePoints = useCallback((wpm: number, accuracy: number) => {
-    const base = 1;
-    const speed = wpm * 0.05;
-    const acc = (accuracy / 100) * 5;
-    return Math.round(base + speed + acc);
+    // WPM is the main factor, accuracy is a multiplier
+    // 60 WPM @ 95% = 57 pts, 100 WPM @ 100% = 100 pts
+    const accuracyMultiplier = accuracy / 100;
+    return Math.round(wpm * accuracyMultiplier);
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

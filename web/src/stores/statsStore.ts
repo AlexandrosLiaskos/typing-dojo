@@ -37,16 +37,19 @@ interface StatsState {
   updateStats: (wpm: number, accuracy: number) => Promise<void>;
 }
 
-function calculatePoints(wpm: number, accuracy: number, _sessions: number): number {
-  // Same formula as TypingSession:
-  // Base: 1 point
-  // Speed: 0.05 per WPM (60 WPM = 3 pts)
-  // Accuracy: up to 5 pts for 100%
-  // Total: ~9 points for a good session
-  const base = 1;
-  const speed = wpm * 0.05;
-  const acc = (accuracy / 100) * 5;
-  return Math.round(base + speed + acc);
+function calculateSessionPoints(wpm: number, accuracy: number): number {
+  // WPM is the main factor - more speed = more points
+  // Accuracy acts as a multiplier (0.5x to 1.0x)
+  //
+  // Examples:
+  // 30 WPM, 90% accuracy = 30 * 0.90 = 27 pts
+  // 60 WPM, 95% accuracy = 60 * 0.95 = 57 pts
+  // 80 WPM, 98% accuracy = 80 * 0.98 = 78 pts
+  // 100 WPM, 100% accuracy = 100 * 1.0 = 100 pts
+  // 50 WPM, 70% accuracy = 50 * 0.70 = 35 pts
+
+  const accuracyMultiplier = accuracy / 100;
+  return Math.round(wpm * accuracyMultiplier);
 }
 
 export const useStatsStore = create<StatsState>((set, get) => ({
@@ -137,11 +140,10 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     const averageWpm = sessionsCompleted === 1
       ? wpm
       : (currentStats.averageWpm * currentStats.sessionsCompleted + wpm) / sessionsCompleted;
-    const totalPoints = calculatePoints(
-      Math.max(currentStats.bestWpm, wpm),
-      Math.max(currentStats.bestAccuracy, accuracy),
-      sessionsCompleted
-    );
+
+    // Calculate points for THIS session and ADD to total
+    const sessionPoints = calculateSessionPoints(wpm, accuracy);
+    const totalPoints = currentStats.totalPoints + sessionPoints;
 
     const newStats = {
       user_id: user.id,
